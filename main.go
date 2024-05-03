@@ -93,7 +93,7 @@ func DealWithMarkers(slice []string) []string {
 					break
 				}
 			} else if slice[i] == "(hex)" {
-				num, err := (strconv.ParseInt(slice[i-1], 16, 64))
+				num, err := (strconv.ParseInt(slice[i-1], 2, 64))
 				if err == nil {
 					slice[i-1] = strconv.Itoa(int(num))
 					slice[i] = ""
@@ -191,42 +191,30 @@ func HandlSingleQuotes(slice []string) string {
 	word = ConvertSliceintoString(temp)
 
 	// Handling teh case when we have a lot of single quotes .
-	count := 0
-	for _, char := range word {
-		if char == '\'' {
-			count++
-		}
-	}
-
 	sli := []rune(word)
 	first := -1
 	last := -1
 	var test []rune
-	if count%2 == 0 {
-		for i := 0; i < len(sli)-1; i++ {
-			if sli[i] == '\'' {
-				if first == -1 {
-					first = i
-					test = append(test, ' ', sli[i])
-					last = -1
-				} else if first != -1 && last == -1 {
-					last = i
-					first = -1
-					if sli[i+1] == ',' || sli[i+1] == '.' || sli[i+1] == ';' || sli[i+1] == ':' || sli[i+1] == '!' || sli[i+1] == '?' {
-						test = append(test, sli[i])
-					} else {
-						test = append(test, sli[i], ' ')
-					}
+	for i := 0; i < len(sli)-1; i++ {
+		if sli[i] == '\'' {
+			if first == -1 {
+				first = i
+				test = append(test, ' ', sli[i])
+				last = -1
+			} else if first != -1 && last == -1 {
+				last = i
+				first = -1
+				if sli[i+1] == ',' || sli[i+1] == '.' || sli[i+1] == ';' || sli[i+1] == ':' || sli[i+1] == '!' || sli[i+1] == '?' {
+					test = append(test, sli[i])
+				} else {
+					test = append(test, sli[i], ' ')
 				}
-			} else {
-				test = append(test, sli[i])
 			}
+		} else {
+			test = append(test, sli[i])
 		}
-		test = append(test, sli[len(sli)-1])
-	} else {
-		test = sli
 	}
-
+	test = append(test, sli[len(sli)-1])
 	word = ConvertSliceintoString(AddWhiteSpaces(strings.Fields(string(test))))
 
 	return word
@@ -273,6 +261,8 @@ func HandlPonctuation(slice []string) []string {
 				temp[j] = temp[j+1]
 			}
 			ToReturn = append(ToReturn, temp[i], ' ')
+		} else if (temp[i] == ',' || temp[i] == '.' || temp[i] == ';' || temp[i] == ':' || temp[i] == '!' || temp[i] == '?') && (temp[i+1] != ',' && temp[i+1] != '.' && temp[i+1] != ';' && temp[i+1] != ':' && temp[i+1] != '!' && temp[i+1] != '?') {
+			ToReturn = append(ToReturn, temp[i], ' ')
 		} else {
 			ToReturn = append(ToReturn, temp[i])
 		}
@@ -294,22 +284,28 @@ func IsTheWordPonctuation(str string) bool {
 }
 
 func HandlVowels(slice []string) []string {
-
+	Check := false
+	Index := 0
 	for i := 0; i < len(slice)-1; i++ {
-		if (len(slice[i]) == 1) && (slice[i] == "a" || slice[i] == "A") && (slice[i+1][0] == 'h' || slice[i+1][0] == 'o' || slice[i+1][0] == 'i' || slice[i+1][0] == 'u' || slice[i+1][0] == 'e' || slice[i+1][0] == 'a' || slice[i+1][0] == 'H' || slice[i+1][0] == 'O' || slice[i+1][0] == 'I' || slice[i+1][0] == 'U' || slice[i+1][0] == 'E' || slice[i+1][0] == 'A') {
-			fmt.Println(string(slice[i][len(slice[i])-1]), " ", string(slice[i+1][0]), " ", i)
-			slice[i] += "n"
-		} else if (len(slice[i]) > 1) && (slice[i][len(slice[i])-1] == 'a' || slice[i][len(slice[i])-1] == 'A') && (slice[i+1][0] == 'h' || slice[i+1][0] == 'o' || slice[i+1][0] == 'i' || slice[i+1][0] == 'u' || slice[i+1][0] == 'e' || slice[i+1][0] == 'a' || slice[i+1][0] == 'H' || slice[i+1][0] == 'O' || slice[i+1][0] == 'I' || slice[i+1][0] == 'U' || slice[i+1][0] == 'E' || slice[i+1][0] == 'A') {
-			fmt.Println(string(slice[i][len(slice[i])-1]), " ", string(slice[i+1][0]), " ", i)
+		if len(slice[i]) == 1 && (slice[i] == "a" || slice[i] == "A") && (slice[i+1][0] == 'h' || slice[i+1][0] == 'o' || slice[i+1][0] == 'i' || slice[i+1][0] == 'u' || slice[i+1][0] == 'e' || slice[i+1][0] == 'a' || slice[i+1][0] == 'H' || slice[i+1][0] == 'O' || slice[i+1][0] == 'I' || slice[i+1][0] == 'U' || slice[i+1][0] == 'E' || slice[i+1][0] == 'A') {
+			Check = true
+			Index = i
+		} else if len(slice[i]) > 1 && (slice[i][len(slice[i])-1] == 'a' || slice[i][len(slice[i])-1] == 'A') && (slice[i+1][0] == 'h' || slice[i+1][0] == 'o' || slice[i+1][0] == 'i' || slice[i+1][0] == 'u' || slice[i+1][0] == 'e' || slice[i+1][0] == 'a' || slice[i+1][0] == 'H' || slice[i+1][0] == 'O' || slice[i+1][0] == 'I' || slice[i+1][0] == 'U' || slice[i+1][0] == 'E' || slice[i+1][0] == 'A') {
 			for j := range slice[i][:len(slice[i])-1] {
 				if slice[i][j] >= 'a' && slice[i][j] <= 'z' || slice[i][j] >= 'A' && slice[i][j] <= 'Z' {
+					Check = false
 					break
 				} else {
-					slice[i] += "n"
+					Check = true
+					Index = i
 				}
 			}
 		}
 	}
+	if Check {
+		slice[Index] += "n"
+	}
+
 	return AddWhiteSpaces(slice)
 }
 
